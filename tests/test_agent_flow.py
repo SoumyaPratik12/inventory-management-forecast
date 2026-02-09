@@ -54,7 +54,7 @@ def test_run_check_llm_error_notifies_ops(monkeypatch, caplog):
         def generate_message(self, payload):
             raise RuntimeError('LLM failure')
 
-    agent.ai = BadAI()
+    agent.ai = BadAI()  # type: ignore
 
     res = agent.run_check()
     assert res['status'] == 'failure' and res['failure_type'] == 'LLM_ERROR'

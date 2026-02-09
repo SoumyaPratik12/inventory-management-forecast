@@ -51,7 +51,7 @@ class RiskAssessment:
     carbon_footprint_kg: float = 0.0  # kg CO2 equivalent if wasted
     supplier_risk_level: str = "low"  # "low", "medium", "high", "critical"
     supplier_id: Optional[str] = None
-    compliance_issues: List[str] = None
+    compliance_issues: Optional[List[str]] = None
 
     def __post_init__(self):
         if self.compliance_issues is None:
