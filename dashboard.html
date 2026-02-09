@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Sentinel Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .alert { background: #ff4444; color: white; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { background: #44ff44; color: black; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .risk-item { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .status { font-size: 18px; font-weight: bold; }
+        .metric { display: inline-block; margin: 10px 20px 10px 0; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #007bff; }
+        .metric-label { font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Inventory Sentinel Dashboard</h1>
+        
+        <div class="card">
+            <h2>System Status</h2>
+            <div id="status" class="status">Loading...</div>
+            <button onclick="checkHealth()">Check Health</button>
+            <button onclick="runAnalysis()">Run Analysis</button>
+            <button onclick="ingestData()">Ingest Data</button>
+        </div>
+
+        <div class="card">
+            <h2>Key Metrics</h2>
+            <div id="metrics">
+                <div class="metric">
+                    <div class="metric-value" id="totalRisks">-</div>
+                    <div class="metric-label">At-Risk SKUs</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="cashAtRisk">$-</div>
+                    <div class="metric-label">Cash at Risk</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="executionTime">-</div>
+                    <div class="metric-label">Execution Time (ms)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Current Alert</h2>
+            <div id="alertMessage">No alerts</div>
+        </div>
+
+        <div class="card">
+            <h2>Risk Details</h2>
+            <div id="riskDetails">Click "Run Analysis" to see risks</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5003';
+
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                document.getElementById('status').innerHTML = `✅ ${data.status.toUpperCase()} - ${data.timestamp}`;
+                document.getElementById('status').className = 'status success';
+            } catch (error) {
+                document.getElementById('status').innerHTML = `❌ API NOT AVAILABLE - ${error.message}`;
+                document.getElementById('status').className = 'status alert';
+            }
+        }
+
+        async function ingestData() {
+            try {
+                const response = await fetch(`${API_BASE}/ingest`, { method: 'POST' });
+                const data = await response.json();
+                alert('✅ Data ingested successfully');
+            } catch (error) {
+                alert('❌ Ingestion failed: ' + error.message);
+            }
+        }
+
+        async function runAnalysis() {
+            try {
+                const response = await fetch(`${API_BASE}/analyze`);
+                const data = await response.json();
+                
+                // Update metrics
+                document.getElementById('totalRisks').textContent = data.total_risks;
+                document.getElementById('cashAtRisk').textContent = `$${data.total_cash_at_risk.toLocaleString()}`;
+                document.getElementById('executionTime').textContent = `${data.execution_time_ms.toFixed(2)}ms`;
+                
+                // Update alert
+                if (data.alert_message) {
+                    document.getElementById('alertMessage').innerHTML = `<div class="alert">${data.alert_message.replace(/\n/g, '<br>')}</div>`;
+                } else {
+                    document.getElementById('alertMessage').innerHTML = '<div class="success">✅ No risks detected</div>';
+                }
+                
+                // Update risk details
+                if (data.top_risks && data.top_risks.length > 0) {
+                    let risksHtml = '';
+                    data.top_risks.forEach(risk => {
+                        risksHtml += `
+                            <div class="risk-item">
+                                <strong>${risk.sku}</strong> - 
+                                $${risk.cash_at_risk.toLocaleString()} at risk, 
+                                ${risk.days_left} days left, 
+                                ${(risk.breakeven_prob * 100).toFixed(1)}% breakeven probability
+                                (Urgency: ${risk.urgency_score.toFixed(0)})
+                            </div>
+                        `;
+                    });
+                    document.getElementById('riskDetails').innerHTML = risksHtml;
+                } else {
+                    document.getElementById('riskDetails').innerHTML = '<div class="success">✅ No risks detected</div>';
+                }
+                
+            } catch (error) {
+                alert('❌ Analysis failed: ' + error.message);
+            }
+        }
+
+        // Auto-check health on load
+        checkHealth();
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+# Optimized Inventory Sentinel - Minimal Dependencies
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Development / test dependencies
+pytest==9.0.2
+requests==2.32.5

@@ -1,0 +1,47 @@
+.\agent.py:32:80: E501 line too long (94 > 79 characters)
+.\agent.py:42:80: E501 line too long (97 > 79 characters)
+.\agent.py:61:80: E501 line too long (102 > 79 characters)
+.\agent.py:135:80: E501 line too long (82 > 79 characters)
+.\agent.py:176:80: E501 line too long (113 > 79 characters)
+.\agent.py:208:80: E501 line too long (81 > 79 characters)
+.\agent.py:210:80: E501 line too long (107 > 79 characters)
+.\agent.py:211:80: E501 line too long (91 > 79 characters)
+.\agent.py:220:80: E501 line too long (96 > 79 characters)
+.\agent.py:241:80: E501 line too long (88 > 79 characters)
+.\agent.py:267:80: E501 line too long (89 > 79 characters)
+.\agent.py:268:80: E501 line too long (99 > 79 characters)
+.\agent.py:269:80: E501 line too long (86 > 79 characters)
+.\agent.py:285:80: E501 line too long (126 > 79 characters)
+.\agent_ai.py:90:80: E501 line too long (94 > 79 characters)
+.\agent_ai.py:91:80: E501 line too long (113 > 79 characters)
+.\agent_ai.py:105:80: E501 line too long (83 > 79 characters)
+.\agent_ai.py:112:80: E501 line too long (94 > 79 characters)
+.\agent_ai.py:118:80: E501 line too long (87 > 79 characters)
+.\agent_ai.py:165:80: E501 line too long (81 > 79 characters)
+.\app\ingest.py:18:80: E501 line too long (80 > 79 characters)
+.\app\models.py:1:80: E501 line too long (84 > 79 characters)
+.\ops_notify.py:3:80: E501 line too long (95 > 79 characters)
+.\ops_notify.py:26:15: F541 f-string is missing placeholders
+.\ops_notify.py:42:80: E501 line too long (86 > 79 characters)
+.\optimized_sentinel.py:82:80: E501 line too long (82 > 79 characters)
+.\optimized_sentinel.py:196:80: E501 line too long (86 > 79 characters)
+.\optimized_sentinel.py:214:80: E501 line too long (93 > 79 characters)
+.\optimized_sentinel.py:216:80: E501 line too long (106 > 79 characters)
+.\optimized_sentinel.py:226:80: E501 line too long (98 > 79 characters)
+.\optimized_sentinel.py:244:80: E501 line too long (111 > 79 characters)
+.\optimized_sentinel.py:254:80: E501 line too long (91 > 79 characters)
+.\optimized_sentinel.py:256:80: E501 line too long (106 > 79 characters)
+.\optimized_sentinel.py:262:80: E501 line too long (126 > 79 characters)
+.\optimized_sentinel.py:267:80: E501 line too long (80 > 79 characters)
+.\optimized_sentinel.py:271:80: E501 line too long (80 > 79 characters)
+.\optimized_sentinel.py:339:80: E501 line too long (90 > 79 characters)
+.\optimized_sentinel.py:407:11: F541 f-string is missing placeholders
+.\test_agent_ai.py:1:1: F401 'pytest' imported but unused
+.\test_agent_ai.py:60:1: E303 too many blank lines (5)
+.\test_agent_ai.py:68:5: F841 local variable 'ai' is assigned to but never used
+.\test_agent_ai.py:95:80: E501 line too long (101 > 79 characters)
+.\test_optimized.py:64:15: F541 f-string is missing placeholders
+.\test_optimized.py:87:11: F541 f-string is missing placeholders
+.\test_optimized.py:98:11: F541 f-string is missing placeholders
+.\tests\test_agent_flow.py:1:1: F401 'pytest' imported but unused
+.\tests\test_risk_math.py:3:1: F401 'pytest' imported but unused

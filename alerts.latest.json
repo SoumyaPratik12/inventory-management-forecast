@@ -1,0 +1,1 @@
+{"run_id": "20260209T064509Z", "status": "alert", "skus": [{"sku": "SKU1", "cash_at_risk": 1000, "days_to_expiry": 5, "breakeven_probability": 0.1}], "timestamp": "2026-02-09T06:45:09.427280+00:00"}
