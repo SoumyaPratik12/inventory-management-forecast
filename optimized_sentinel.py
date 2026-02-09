@@ -48,6 +48,14 @@ class RiskAssessment:
     days_left: int
     breakeven_prob: float
     urgency_score: float
+    carbon_footprint_kg: float = 0.0  # kg CO2 equivalent if wasted
+    supplier_risk_level: str = "low"  # "low", "medium", "high", "critical"
+    supplier_id: Optional[str] = None
+    compliance_issues: List[str] = None
+
+    def __post_init__(self):
+        if self.compliance_issues is None:
+            self.compliance_issues = []
 
 
 class OptimizedInventorySentinel:
@@ -215,7 +223,7 @@ class OptimizedInventorySentinel:
             return False
 
     def analyze_inventory(self) -> List[RiskAssessment]:
-        """Deterministic inventory risk analysis following the specified formulas (no AI)."""
+        """Deterministic inventory risk analysis with carbon & supplier compliance."""
         try:
             from app.config import BREAKEVEN_PROB_THRESHOLD, REMAINING_CASH_THRESHOLD, DAYS_LEFT_THRESHOLD
         except Exception:
@@ -223,11 +231,22 @@ class OptimizedInventorySentinel:
             REMAINING_CASH_THRESHOLD = 300.0
             DAYS_LEFT_THRESHOLD = 30
 
+        # Initialize carbon & compliance checkers
+        from carbon_footprint import CarbonFootprintCalculator
+        from supplier_compliance import SupplierComplianceChecker
+        carbon_calc = CarbonFootprintCalculator()
+        compliance_checker = SupplierComplianceChecker()
+
         try:
             with self.get_connection() as conn:
-                # Retrieve all inventory in one shot
-                inv_rows = conn.execute(
-                    "SELECT sku, units_on_hand, unit_cost, expiry_date FROM inventory").fetchall()
+                # Retrieve all inventory in one shot (supplier_id optional if schema has it)
+                try:
+                    inv_rows = conn.execute(
+                        "SELECT sku, units_on_hand, unit_cost, expiry_date, COALESCE(supplier_id, '') as supplier_id FROM inventory").fetchall()
+                except Exception:
+                    # Fallback if supplier_id column doesn't exist
+                    inv_rows = conn.execute(
+                        "SELECT sku, units_on_hand, unit_cost, expiry_date FROM inventory").fetchall()
 
                 # Batch aggregate sales per SKU to avoid N+1 queries
                 agg_sql = ("SELECT sku, "
@@ -257,6 +276,13 @@ class OptimizedInventorySentinel:
                         if days_left <= 0:
                             continue  # expired
 
+                        # Get supplier_id if available in row (optional field)
+                        supplier_id = None
+                        try:
+                            supplier_id = row.get('supplier_id') if row.get('supplier_id', '').strip() else None
+                        except (KeyError, TypeError, AttributeError):
+                            supplier_id = None
+
                         total_sold, sold_30 = sales_aggs.get(sku, (0, 0))
 
                         remaining_units = max(units_on_hand - total_sold, 0)
@@ -282,12 +308,41 @@ class OptimizedInventorySentinel:
 
                         if is_risky:
                             urgency_score = remaining_cash / max(days_left, 1)
+
+                            # Calculate carbon footprint for at-risk units
+                            carbon_footprint = 0.0
+                            try:
+                                footprint_data = carbon_calc.calculate_carbon_footprint(
+                                    sku=sku,
+                                    units_at_risk=remaining_units,
+                                    unit_cost=unit_cost,
+                                    waste_category="default"
+                                )
+                                carbon_footprint = footprint_data.total_environmental_impact_kg
+                            except Exception as e:
+                                logger.warning(f"Carbon calc skipped for {sku}: {e}")
+
+                            # Check supplier compliance
+                            supplier_risk_level = "low"
+                            compliance_issues = []
+                            if supplier_id:
+                                try:
+                                    compliance_rec = compliance_checker.check_supplier_compliance(supplier_id)
+                                    supplier_risk_level = compliance_rec.risk_level
+                                    compliance_issues = compliance_rec.compliance_issues
+                                except Exception as e:
+                                    logger.warning(f"Compliance check skipped for {supplier_id}: {e}")
+
                             risk_assessments.append(RiskAssessment(
                                 sku=sku,
                                 cash_at_risk=round(remaining_cash, 2),
                                 days_left=days_left,
                                 breakeven_prob=breakeven_prob,
-                                urgency_score=urgency_score
+                                urgency_score=urgency_score,
+                                carbon_footprint_kg=carbon_footprint,
+                                supplier_risk_level=supplier_risk_level,
+                                supplier_id=supplier_id,
+                                compliance_issues=compliance_issues
                             ))
 
                     except Exception as e:
